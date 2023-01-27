@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { TwilioService } from 'nestjs-twilio';
+import { CreateSmsLogDto } from './sms-log/dtos/create-sms-log.dto';
+import { SmsLogService } from './sms-log/sms-log.service';
 
 @Injectable()
 export class AppService {
-  public constructor(private readonly twilioService: TwilioService) {}
+  constructor(
+    private readonly twilioService: TwilioService,
+    private readonly smsLogService: SmsLogService
+  ) {}
 
   homeApi(): { status: number; message: string } {
     return {
@@ -17,7 +22,8 @@ export class AppService {
       const smsResponse = await this.twilioService.client.messages.create({
         body: "Well, I woke up this mornin' and I got myself a beer. The future's uncertain and the end is always near!",
         from: process.env.TWILIO_PHONE_NUMBER,
-        to: process.env.TEST_PHONE_NUMBER
+        to: process.env.TEST_PHONE_NUMBER,
+        statusCallback: `http://localhost:${process.env.PORT}/sms-callback`
       });
       return smsResponse;
     } catch (error) {
@@ -36,5 +42,9 @@ export class AppService {
         status: 500
       };
     }
+  }
+
+  async handleCallback(createSmsLogDto: CreateSmsLogDto) {
+    return this.smsLogService.create(createSmsLogDto);
   }
 }
