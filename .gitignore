@@ -1,6 +1,5 @@
 # custom 
 .env
-db.sqlite
 
 # compiled output
 /dist
