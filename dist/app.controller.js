@@ -26,6 +26,12 @@ let AppController = class AppController {
     sendSMS() {
         return this.appService.sendSMS();
     }
+    sendWhatsapp() {
+        return this.appService.sendWhatsapp();
+    }
+    async replyToWhatsapp(body) {
+        return this.appService.replyToWhatsapp(body);
+    }
     handleCallback(body) {
         return this.appService.handleCallback(body);
     }
@@ -42,6 +48,19 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "sendSMS", null);
+__decorate([
+    (0, common_1.Get)('/send-whatsapp'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "sendWhatsapp", null);
+__decorate([
+    (0, common_1.Post)('/whatsapp-reply'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "replyToWhatsapp", null);
 __decorate([
     (0, common_1.Post)('/sms-callback'),
     __param(0, (0, common_1.Body)()),

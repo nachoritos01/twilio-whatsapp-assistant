@@ -16,8 +16,20 @@ export class AppController {
     return this.appService.sendSMS();
   }
 
+  @Get('/send-whatsapp')
+  sendWhatsapp() {
+    return this.appService.sendWhatsapp();
+  }
+
+  @Post('/whatsapp-reply')
+  async replyToWhatsapp(@Body() body: any) {
+    return this.appService.replyToWhatsapp(body);
+  }
+
   @Post('/sms-callback')
   handleCallback(@Body() body: CreateSmsLogDto) {
     return this.appService.handleCallback(body);
   }
 }
+
+//https://timberwolf-mastiff-9776.twil.io/demo-reply

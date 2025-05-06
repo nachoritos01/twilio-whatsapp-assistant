@@ -18,5 +18,13 @@ export declare class AppController {
         code?: undefined;
         moreInfo?: undefined;
     }>;
+    sendWhatsapp(): Promise<import("twilio/lib/rest/api/v2010/account/message").MessageInstance | {
+        error: string;
+        status: number;
+    }>;
+    replyToWhatsapp(body: any): Promise<import("twilio/lib/rest/api/v2010/account/message").MessageInstance | {
+        error: string;
+        status: number;
+    }>;
     handleCallback(body: CreateSmsLogDto): Promise<CreateSmsLogDto & import("./sms-log/entities/sms-log.entity").SmsLog>;
 }
