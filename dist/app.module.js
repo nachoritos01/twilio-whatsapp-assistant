@@ -16,6 +16,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const sms_log_entity_1 = require("./sms-log/entities/sms-log.entity");
 const sms_log_module_1 = require("./sms-log/sms-log.module");
 const core_1 = require("@nestjs/core");
+const google_calendar_service_1 = require("./google-calendar.service");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -48,6 +49,7 @@ AppModule = __decorate([
         controllers: [app_controller_1.AppController],
         providers: [
             app_service_1.AppService,
+            google_calendar_service_1.GoogleCalendarService,
             {
                 provide: core_1.APP_PIPE,
                 useValue: new common_1.ValidationPipe({

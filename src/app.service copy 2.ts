@@ -7,7 +7,7 @@ import { log } from 'console';
 import Redis from 'ioredis';
 
 @Injectable()
-export class AppService {
+export class AppService2 {
   private readonly redis = new Redis(); // Conexión a Redis
   constructor(
     private readonly twilioService: TwilioService,

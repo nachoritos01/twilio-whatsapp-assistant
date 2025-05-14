@@ -3,6 +3,10 @@
 
 # compiled output
 /node_modules
+/calendar/quickstart/node_modules/*
+**/credentials.json
+**/token.json
+token.json
 
 # Logs
 logs

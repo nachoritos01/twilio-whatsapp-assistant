@@ -1,14 +1,23 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CreateSmsLogDto } from './sms-log/dtos/create-sms-log.dto';
+import { get } from 'http';
+import { GoogleCalendarService } from './google-calendar.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private calendar: GoogleCalendarService
+  ) {}
 
   @Get()
   homeApi(): { status: number; message: string } {
     return this.appService.homeApi();
+  }
+  @Get('/list-events-calendar')
+  async listEventsCalendar() {
+    return await this.calendar.listUpcomingEvents();
   }
 
   @Get('/send-sms')

@@ -13,14 +13,12 @@ exports.AppService = void 0;
 const common_1 = require("@nestjs/common");
 const nestjs_twilio_1 = require("nestjs-twilio");
 const sms_log_service_1 = require("./sms-log/sms-log.service");
-const google_calendar_service_1 = require("./google-calendar.service");
 const console_1 = require("console");
 const ioredis_1 = require("ioredis");
 let AppService = class AppService {
-    constructor(twilioService, smsLogService, googleCalendarService) {
+    constructor(twilioService, smsLogService) {
         this.twilioService = twilioService;
         this.smsLogService = smsLogService;
-        this.googleCalendarService = googleCalendarService;
         this.redis = new ioredis_1.default();
     }
     async getUserState(userId) {
@@ -34,38 +32,6 @@ let AppService = class AppService {
             status: 200,
             message: "To send an SMS using Twilio, go to the '/send-sms' route."
         };
-    }
-    async sendSMS() {
-        try {
-            (0, console_1.log)(process.env);
-            const smsResponse = await this.twilioService.client.messages.create({
-                body: "Well, I woke up this mornin' and I got myself a beer. The future's uncertain and the end is always near!",
-                from: process.env.TWILIO_PHONE_NUMBER,
-                to: process.env.TEST_PHONE_NUMBER,
-                statusCallback: `${process.env.NGROK_URL}/sms-callback`
-            });
-            return smsResponse;
-        }
-        catch (error) {
-            (0, console_1.log)('Error sending SMS:', error);
-            const twilioErrorStatuses = [400, 404, 410];
-            if (twilioErrorStatuses.includes(error.status)) {
-                const { message, status, code, moreInfo } = error;
-                return {
-                    error: message,
-                    status,
-                    code,
-                    moreInfo
-                };
-            }
-            return {
-                error: 'Something went wrong!',
-                status: 500
-            };
-        }
-    }
-    async handleCallback(createSmsLogDto) {
-        return this.smsLogService.create(createSmsLogDto);
     }
     async sendWhatsapp() {
         try {
@@ -105,7 +71,7 @@ let AppService = class AppService {
             else if (userState === 'menu') {
                 if (incomingMessage === '1') {
                     responseMessage =
-                        'Por favor, indícame una fecha para tu cita (por ejemplo: "2025-05-10").';
+                        'Por favor, indícame una fecha para tu cita (por ejemplo: "15 de mayo").';
                     await this.setUserState(from, 'creating_appointment_date');
                 }
                 else if (incomingMessage === '2') {
@@ -135,34 +101,28 @@ let AppService = class AppService {
             }
             else if (userState === 'creating_appointment_time') {
                 const appointmentDate = await this.getUserState(`${from}_date`);
-                const patientName = (await this.getUserState(`${from}_name`)) || 'Paciente';
-                const isAvailable = await this.googleCalendarService.isTimeSlotAvailable(appointmentDate, incomingMessage);
-                if (!isAvailable) {
-                    responseMessage = `Lo siento, el horario ${incomingMessage} ya está ocupado. Por favor, selecciona otro horario.`;
-                    await this.setUserState(from, 'creating_appointment_time');
-                }
-                else {
-                    const event = {
-                        summary: `Cita: ${patientName} (${from})`,
-                        description: 'Cita creada desde el asistente de WhatsApp.',
-                        start: {
-                            dateTime: new Date(`${appointmentDate}T${incomingMessage}:00`).toISOString(),
-                            timeZone: 'America/Mexico_City'
-                        },
-                        end: {
-                            dateTime: new Date(`${appointmentDate}T${parseInt(incomingMessage) + 1}:00:00`).toISOString(),
-                            timeZone: 'America/Mexico_City'
-                        }
-                    };
-                    await this.googleCalendarService.createEvent(event);
-                    responseMessage = `Tu cita ha sido registrada para el ${appointmentDate} a las ${incomingMessage}. ¡Gracias, ${patientName}!`;
-                    await this.setUserState(from, 'start');
-                }
+                responseMessage = `Tu cita ha sido registrada para el ${appointmentDate} a las ${incomingMessage}. ¡Gracias!`;
+                await this.setUserState(from, 'start');
             }
             else if (userState === 'cancelling_appointment') {
-                const eventId = incomingMessage;
-                await this.googleCalendarService.deleteEvent(eventId);
-                responseMessage = `La cita con ID "${eventId}" ha sido cancelada.`;
+                responseMessage = `La cita con ID "${incomingMessage}" ha sido cancelada.`;
+                await this.setUserState(from, 'start');
+            }
+            else if (userState === 'viewing_schedule') {
+                if (incomingMessage === '1') {
+                    responseMessage =
+                        'Por favor, indícame una fecha para tu cita (por ejemplo: "15 de mayo").';
+                    await this.setUserState(from, 'creating_appointment_date');
+                }
+                else {
+                    responseMessage =
+                        'Volviendo al inicio. ¿Qué deseas hacer?\n1. Crear una cita\n2. Cancelar una cita\n3. Ver horarios disponibles\n4. Hablar con un agente';
+                    await this.setUserState(from, 'menu');
+                }
+            }
+            else if (userState === 'talking_to_agent') {
+                responseMessage =
+                    'Un agente se pondrá en contacto contigo pronto. ¡Gracias por tu paciencia!';
                 await this.setUserState(from, 'start');
             }
             return this.twilioService.client.messages.create({
@@ -179,12 +139,43 @@ let AppService = class AppService {
             };
         }
     }
+    async sendSMS() {
+        try {
+            (0, console_1.log)(process.env);
+            const smsResponse = await this.twilioService.client.messages.create({
+                body: "Well, I woke up this mornin' and I got myself a beer. The future's uncertain and the end is always near!",
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: process.env.TEST_PHONE_NUMBER,
+                statusCallback: `${process.env.NGROK_URL}/sms-callback`
+            });
+            return smsResponse;
+        }
+        catch (error) {
+            (0, console_1.log)('Error sending SMS:', error);
+            const twilioErrorStatuses = [400, 404, 410];
+            if (twilioErrorStatuses.includes(error.status)) {
+                const { message, status, code, moreInfo } = error;
+                return {
+                    error: message,
+                    status,
+                    code,
+                    moreInfo
+                };
+            }
+            return {
+                error: 'Something went wrong!',
+                status: 500
+            };
+        }
+    }
+    async handleCallback(createSmsLogDto) {
+        return this.smsLogService.create(createSmsLogDto);
+    }
 };
 AppService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [nestjs_twilio_1.TwilioService,
-        sms_log_service_1.SmsLogService,
-        google_calendar_service_1.GoogleCalendarService])
+        sms_log_service_1.SmsLogService])
 ], AppService);
 exports.AppService = AppService;
-//# sourceMappingURL=app.service.js.map
+//# sourceMappingURL=app.service%20copy.js.map

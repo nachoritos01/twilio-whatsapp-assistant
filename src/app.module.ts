@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SmsLog } from './sms-log/entities/sms-log.entity';
 import { SmsLogModule } from './sms-log/sms-log.module';
 import { APP_PIPE } from '@nestjs/core';
+import { GoogleCalendarService } from './google-calendar.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { APP_PIPE } from '@nestjs/core';
   controllers: [AppController],
   providers: [
     AppService,
+    GoogleCalendarService, // Proporciona el servicio de Google Calendar
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({

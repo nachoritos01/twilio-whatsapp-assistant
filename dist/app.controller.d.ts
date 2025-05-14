@@ -1,12 +1,15 @@
 import { AppService } from './app.service';
 import { CreateSmsLogDto } from './sms-log/dtos/create-sms-log.dto';
+import { GoogleCalendarService } from './google-calendar.service';
 export declare class AppController {
     private readonly appService;
-    constructor(appService: AppService);
+    private calendar;
+    constructor(appService: AppService, calendar: GoogleCalendarService);
     homeApi(): {
         status: number;
         message: string;
     };
+    listEventsCalendar(): Promise<import("googleapis").calendar_v3.Schema$Event[]>;
     sendSMS(): Promise<import("twilio/lib/rest/api/v2010/account/message").MessageInstance | {
         error: any;
         status: any;

@@ -16,12 +16,17 @@ exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
 const create_sms_log_dto_1 = require("./sms-log/dtos/create-sms-log.dto");
+const google_calendar_service_1 = require("./google-calendar.service");
 let AppController = class AppController {
-    constructor(appService) {
+    constructor(appService, calendar) {
         this.appService = appService;
+        this.calendar = calendar;
     }
     homeApi() {
         return this.appService.homeApi();
+    }
+    async listEventsCalendar() {
+        return await this.calendar.listUpcomingEvents();
     }
     sendSMS() {
         return this.appService.sendSMS();
@@ -42,6 +47,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Object)
 ], AppController.prototype, "homeApi", null);
+__decorate([
+    (0, common_1.Get)('/list-events-calendar'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "listEventsCalendar", null);
 __decorate([
     (0, common_1.Get)('/send-sms'),
     __metadata("design:type", Function),
@@ -70,7 +81,8 @@ __decorate([
 ], AppController.prototype, "handleCallback", null);
 AppController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [app_service_1.AppService])
+    __metadata("design:paramtypes", [app_service_1.AppService,
+        google_calendar_service_1.GoogleCalendarService])
 ], AppController);
 exports.AppController = AppController;
 //# sourceMappingURL=app.controller.js.map
