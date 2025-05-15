@@ -2,12 +2,8 @@
 .env
 
 # compiled output
-/node_modules
-/calendar/quickstart/node_modules/*
-/**/**/credentials.json
-/**/**/token.json
-/token.json
-/credentials.json
+**/node_modules
+
 
 # Logs
 logs
@@ -40,3 +36,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+# Sensitive credentials (ignore everywhere)
+**/credentials.json
+**/token.json
